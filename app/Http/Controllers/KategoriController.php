@@ -12,7 +12,7 @@ class KategoriController extends Controller
         // Mengambil semua data kategori
         $kategori = Kategori::all(); 
         // Mengarahkan ke file resources/views/kategori/index.blade.php
-        return view('kategori.index', compact('kategori'));
+        return view('admin.kategoris.index', compact('kategori'));
     }
 
     // Tambahkan method lain (create, store, dll) di bawah sini

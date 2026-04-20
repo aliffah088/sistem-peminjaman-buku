@@ -35,16 +35,20 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'peminjam', // default role (WAJIB kalau pakai role)
         ]);
 
-        event(new Registered($user));
+        // ❌ HAPUS auto login
+        // Auth::login($user);
 
-        Auth::login($user);
-
-        return redirect(route('/peminjam/dashboard', absolute: false));
+        return redirect('/login')->with(
+            'success',
+            'Registrasi berhasil. Silakan login.'
+        );
     }
+
 }

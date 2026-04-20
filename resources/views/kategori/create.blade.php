@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
                 <h2 class="text-xl font-bold mb-4">Tambah Kategori</h2>
-                <form action="{{ route('kategori.store') }}" method="POST">
+                <form action="{{ route('kategoris.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
                         <label>Nama Kategori</label>

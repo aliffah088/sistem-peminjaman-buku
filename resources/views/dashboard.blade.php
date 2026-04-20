@@ -1,77 +1,56 @@
-<x-layouts.app>
-    <x-slot:title>Dashboard</x-slot>
-
-    <!-- HEADER -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="p-4 bg-white shadow-sm rounded border-start border-primary border-4">
-                <h3 class="fw-bold mb-1">
-                    Halo, {{ auth()->user()->username }} 👋
-                </h3>
-                <p class="text-muted mb-0">
-                    Kamu login sebagai
-                    <span class="badge bg-info text-dark">
-                        {{ strtoupper(auth()->user()->role) }}
-                    </span>
-                </p>
+@include('layouts.header')
+    <body class="sb-nav-fixed">
+        @include('layouts.navbar') 
+        @include('layouts.sidebar')
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">Dashboard</h1>
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">Primary Card</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <a class="small text-white stretched-link" href="#">View Details</a>
+                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-warning text-white mb-4">
+                                    <div class="card-body">Warning Card</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <a class="small text-white stretched-link" href="#">View Details</a>
+                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-success text-white mb-4">
+                                    <div class="card-body">Success Card</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <a class="small text-white stretched-link" href="#">View Details</a>
+                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-danger text-white mb-4">
+                                    <div class="card-body">Danger Card</div>
+                                    <div class="card-footer d-flex align-items-center justify-content-between">
+                                        <a class="small text-white stretched-link" href="#">View Details</a>
+                                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
             </div>
         </div>
-    </div>
-
-    <!-- CARD STAT -->
-    <div class="row">
-
-        <!-- Total Alat -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                <div class="card-body">
-                    <h6 class="text-uppercase small">Total Alat Tersedia</h6>
-                    <h2 class="fw-bold">{{ $totalAlat }}</h2>
-                    <i class="bi bi-tools fs-1 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Peminjaman -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm bg-warning text-dark h-100">
-                <div class="card-body">
-                    <h6 class="text-uppercase small">
-                        {{ auth()->user()->role == 'peminjam'
-                            ? 'Alat Yang Kamu Pinjam'
-                            : 'Alat Sedang Dipinjam' }}
-                    </h6>
-                    <h2 class="fw-bold">{{ $pinjamanAktif }}</h2>
-                    <i class="bi bi-cart-check fs-1 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total User (ADMIN) -->
-        @if(auth()->user()->role == 'admin')
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm bg-success text-white h-100">
-                <div class="card-body">
-                    <h6 class="text-uppercase small">Total Pengguna</h6>
-                    <h2 class="fw-bold">{{ $totalUser }}</h2>
-                    <i class="bi bi-people fs-1 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <!-- Terlambat -->
-        @if(auth()->user()->role != 'peminjam')
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm bg-danger text-white h-100">
-                <div class="card-body">
-                    <h6 class="text-uppercase small">Terlambat Dikembalikan</h6>
-                    <h2 class="fw-bold">{{ $perluDikembalikan ?? 0 }}</h2>
-                    <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
-                </div>
-            </div>
-        </div>
-        @endif
-
-    </div>
-</x-layouts.app>
+@include('layouts.footer')
+    </body>
+</html>

@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Show login page
      */
     public function create(): View
     {
@@ -20,62 +20,44 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Handle login
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // proses login bawaan Laravel Breeze
         $request->authenticate();
-
         $request->session()->regenerate();
 
-       $user = Auth::user();
+        $user = Auth::user();
+        $role = strtolower(trim($user->role));
 
-        if ($user->role == 'admin') {
-            return redirect('/admin/dashboard');
-        } elseif ($user->role == 'petugas') {
-            return redirect('/petugas/dashboard');
-        } else {
-            return redirect('/peminjam/dashboard');
+        // redirect berdasarkan role
+        switch ($role) {
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+
+            case 'petugas':
+                return redirect()->route('petugas.dashboard');
+
+            case 'peminjam':
+                return redirect()->route('peminjam.dashboard');
+
+            default:
+                Auth::logout();
+                abort(403, 'Role tidak dikenali');
         }
     }
 
     /**
-     * Destroy an authenticated session.
+     * Logout
      */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');
     }
-
-    public function authenticate(Request $request)
-{
-    $credentials = $request->validate([
-        'username' => 'required',
-        'password' => 'required'
-    ]);
-
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-
-        $role = Auth::user()->role;
-
-        if ($role == 'admin') {
-            return redirect('/admin/dashboard');
-        } elseif ($role == 'petugas') {
-            return redirect('/petugas/dashboard');
-        } else {
-            return redirect('/peminjam/dashboard');
-        }
-    }
-
-    return back()->withErrors([
-        'login' => 'Username atau password salah'
-    ]);
-}
 }

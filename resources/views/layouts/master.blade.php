@@ -15,6 +15,12 @@
                     <li class="nav-item"><a class="nav-link" href="/alat">Data Alat</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kategori">Kategori</a></li>
                     <li class="nav-item"><a class="nav-link" href="/peminjaman">Peminjaman</a></li>
+    
+                    <li class="nav-item"><a class="nav-link" href="/pengembalian">Pengembalian</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/laporan">Laporan</a></li>
+    
+                    <li class="nav-item"><a class="nav-link text-danger" href="/logout">Logout</a></li>
+                    </ul>
                 </ul>
             </div>
         </div>

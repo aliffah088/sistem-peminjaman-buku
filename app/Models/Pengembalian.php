@@ -6,10 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pengembalian extends Model
 {
-    protected $fillable = ['id_peminjaman', 'id_user', 'tgl_pengembalian'];
+    protected $table = 'pengembalians';
 
-    public function denda()
+    protected $fillable = [
+        'peminjaman_id',
+        'tgl_kembali',
+        'denda',
+        'status'
+    ];
+
+    // 🔥 RELASI KE PEMINJAMAN
+    public function peminjaman()
     {
-        return $this->hasOne(Denda::class, 'id_pengembalian');
+        return $this->belongsTo(Peminjaman::class, 'peminjaman_id', 'id');
     }
 }

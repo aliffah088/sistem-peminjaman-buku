@@ -3,23 +3,39 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Alat extends Model
 {
-    public function detailPeminjaman()
-{
-    return $this->hasMany(DetailPeminjaman::class, 'id_alat', 'id_alat');
-}
-    // Tambahkan baris ini agar Laravel tidak mencari tabel 'alats'
-    protected $table = 'alat'; 
-    
-    // Pastikan juga primary key-nya sesuai ERD kamu
-    protected $primaryKey = 'id_alat'; 
+    use HasFactory;
 
-    protected $fillable = ['id_kategori', 'nama_alat', 'kondisi', 'stok'];
-    
-// Relasi ke Kategori
-public function kategori() {
-    return $this->belongsTo(Kategori::class, 'id_kategori', 'id_kategori');
+    protected $table = 'alat';
+    protected $primaryKey = 'id_alat';
+
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    protected $fillable = [
+        'nama_alat',
+        'stok',
+        'id_kategori',
+    ];
+
+    // 🔗 Relasi ke kategori
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class, 'id_kategori', 'id_kategori');
+    }
+
+    // 🔗 Relasi ke peminjaman (sudah benar, biarin aja)
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class, 'id_alat', 'id_alat');
+    }
+
+    // 🔥 Status stok (opsional buat tampilan)
+    public function getStatusStokAttribute()
+    {
+        return $this->stok > 0 ? 'Tersedia' : 'Habis';
     }
 }

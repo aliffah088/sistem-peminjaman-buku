@@ -21,11 +21,11 @@ class DashboardController extends Controller
         if ($user->role === 'peminjam') {
 
             // Peminjam: hanya data miliknya
-            $data['pinjamanAktif'] = Peminjaman::where('id_user', $user->id)
+            $data['pinjamanAktif'] = Peminjaman::where('user_id', $user->id)
                 ->where('status', 'dipinjam')
                 ->count();
 
-            $data['totalRiwayat'] = Peminjaman::where('id_user', $user->id)->count();
+            $data['totalRiwayat'] = Peminjaman::where('user_id', $user->id)->count();
 
         } else {
 
