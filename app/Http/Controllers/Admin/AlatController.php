@@ -1,95 +1,134 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Alat;
 use App\Models\Kategori;
+use App\Models\LogAktivitas;
 
 class AlatController extends Controller
 {
-    // 🔥 TAMPIL DATA
     public function index()
     {
         $alat = Alat::with('kategori')->get();
-        return view('admin.alat.index', compact('alat'));
+        $kategoris = Kategori::all();
+        return view('admin.alat.index', compact('alat', 'kategoris'));
     }
 
-    // 🔥 FORM TAMBAH
     public function create()
     {
         $kategoris = Kategori::all();
         return view('admin.alat.create', compact('kategoris'));
     }
 
-    // 🔥 SIMPAN DATA
     public function store(Request $request)
     {
         $request->validate([
             'nama_alat'   => 'required',
             'stok'        => 'required|integer|min:0',
-            'id_kategori' => 'required',
-            'kondisi'     => 'required'
+            'kategori_id' => 'required|exists:kategoris,id',
+            'kondisi'     => 'required',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // 🔥 SIMPAN MANUAL (LEBIH AMAN DARI $request->all())
-        Alat::create([
-            'nama_alat'   => $request->nama_alat,
-            'stok'        => $request->stok,
-            'id_kategori' => $request->id_kategori,
-            'kondisi'     => $request->kondisi,
+        $gambar = null;
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('gambar_buku'), $filename);
+            $gambar = 'gambar_buku/' . $filename;
+        }
+
+        $alat = Alat::create([
+            'nama_alat'    => $request->nama_alat,
+            'stok'         => $request->stok,
+            'kategori_id'  => $request->kategori_id,
+            'kondisi'      => $request->kondisi,
+            'penulis'      => $request->penulis,
+            'penerbit'     => $request->penerbit,
+            'tahun_terbit' => $request->tahun_terbit,
+            'isbn'         => $request->isbn,
+            'gambar'       => $gambar,
         ]);
+
+        // ✅ Catat log
+        LogAktivitas::catat('Tambah Buku', 'Menambahkan buku: ' . $alat->nama_alat);
 
         return redirect()->route('admin.alat.index')
-            ->with('success', 'Alat berhasil ditambahkan');
+            ->with('success', 'Buku berhasil ditambahkan');
     }
 
-    // 🔥 DETAIL
     public function show($id)
     {
         $alat = Alat::with('kategori')->findOrFail($id);
         return view('admin.alat.show', compact('alat'));
     }
 
-    // 🔥 FORM EDIT
     public function edit($id)
     {
         $alat = Alat::findOrFail($id);
         $kategoris = Kategori::all();
-
         return view('admin.alat.edit', compact('alat', 'kategoris'));
     }
 
-    // 🔥 UPDATE
     public function update(Request $request, $id)
     {
         $request->validate([
             'nama_alat'   => 'required',
             'stok'        => 'required|integer|min:0',
-            'id_kategori' => 'required',
-            'kondisi'     => 'required'
+            'kategori_id' => 'required|exists:kategoris,id',
+            'kondisi'     => 'required',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $alat = Alat::findOrFail($id);
 
+        $gambar = $alat->gambar;
+        if ($request->hasFile('gambar')) {
+            if ($gambar && file_exists(public_path($gambar))) {
+                unlink(public_path($gambar));
+            }
+            $file = $request->file('gambar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('gambar_buku'), $filename);
+            $gambar = 'gambar_buku/' . $filename;
+        }
+
         $alat->update([
-            'nama_alat'   => $request->nama_alat,
-            'stok'        => $request->stok,
-            'id_kategori' => $request->id_kategori,
-            'kondisi'     => $request->kondisi,
+            'nama_alat'    => $request->nama_alat,
+            'stok'         => $request->stok,
+            'kategori_id'  => $request->kategori_id,
+            'kondisi'      => $request->kondisi,
+            'penulis'      => $request->penulis,
+            'penerbit'     => $request->penerbit,
+            'tahun_terbit' => $request->tahun_terbit,
+            'isbn'         => $request->isbn,
+            'gambar'       => $gambar,
         ]);
 
+        // ✅ Catat log
+        LogAktivitas::catat('Edit Buku', 'Mengedit buku: ' . $alat->nama_alat);
+
         return redirect()->route('admin.alat.index')
-            ->with('success', 'Alat berhasil diupdate');
+            ->with('success', 'Buku berhasil diupdate');
     }
 
-    // 🔥 HAPUS
     public function destroy($id)
     {
         $alat = Alat::findOrFail($id);
+
+        // ✅ Catat log sebelum hapus
+        LogAktivitas::catat('Hapus Buku', 'Menghapus buku: ' . $alat->nama_alat);
+
+        if ($alat->gambar && file_exists(public_path($alat->gambar))) {
+            unlink(public_path($alat->gambar));
+        }
+
         $alat->delete();
 
         return redirect()->route('admin.alat.index')
-            ->with('success', 'Alat berhasil dihapus');
+            ->with('success', 'Buku berhasil dihapus');
     }
 }

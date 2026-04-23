@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            // Tambahkan kolom kelas setelah email, boleh null karena admin tidak punya kelas
+            $table->string('kelas')->nullable(); 
             $table->enum('role', ['admin', 'petugas', 'peminjam'])->default('peminjam');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

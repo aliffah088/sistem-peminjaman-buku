@@ -1,56 +1,60 @@
-@include('admin.layouts.header')
+@extends('admin.layouts.app')
 
-<body class="sb-nav-fixed">
+@section('content')
+<div class="container-fluid">
 
-@include('admin.layouts.navbar')
-
-<div id="layoutSidenav">
-    @include('admin.layouts.sidebar')
-
-    <div id="layoutSidenav_content">
-        <main>
-            <div class="container-fluid px-4">
-
-                <h1 class="mt-4">Tambah Kategori</h1>
-
-                <div class="card shadow">
-                    <div class="card-body">
-
-                        <form action="{{ route('admin.kategoris.store') }}" method="POST">
-                            @csrf
-
-                            <div class="mb-3">
-                                <label class="form-label">Nama Kategori</label>
-                                <input type="text"
-                                       name="nama_kategori"
-                                       class="form-control"
-                                       value="{{ old('nama_kategori') }}"
-                                       required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Deskripsi</label>
-                                <textarea name="deskripsi"
-                                          class="form-control"
-                                          rows="3">{{ old('deskripsi') }}</textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">
-                                Simpan
-                            </button>
-
-                            <a href="{{ route('admin.kategoris.index') }}"
-                               class="btn btn-secondary">
-                                Kembali
-                            </a>
-
-                        </form>
-
-                    </div>
-                </div>
-
-            </div>
-        </main>
+    {{-- Header --}}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">
+                <i class="bi bi-plus-circle me-2 text-primary"></i>Tambah Kategori
+            </h4>
+            <small class="text-muted">Tambah kategori buku baru</small>
+        </div>
+        <a href="{{ route('admin.kategoris.index') }}" class="btn btn-secondary d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
-</div>
 
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-primary text-white" style="border-radius: 12px 12px 0 0;">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-grid me-2"></i>Form Kategori
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ route('admin.kategoris.store') }}" method="POST">
+                        @csrf
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Nama Kategori</label>
+                            <input type="text"
+                                   name="nama_kategori"
+                                   class="form-control @error('nama_kategori') is-invalid @enderror"
+                                   value="{{ old('nama_kategori') }}"
+                                   placeholder="Contoh: Fiksi, Non-Fiksi, Sains..."
+                                   required>
+                            @error('nama_kategori')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-1"></i>Simpan
+                            </button>
+                            <a href="{{ route('admin.kategoris.index') }}" class="btn btn-secondary px-4">
+                                <i class="bi bi-x me-1"></i>Batal
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+@endsection

@@ -2,89 +2,132 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Peminjaman;
 use App\Models\Alat;
-use Illuminate\Support\Facades\DB;
+use App\Models\Peminjaman;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PeminjamController extends Controller
 {
+    /**
+     * Menampilkan Halaman Dashboard Peminjam
+     */
     public function dashboard()
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
 
-        $total     = Peminjaman::where('user_id', $userId)->count();
-        $menunggu  = Peminjaman::where('user_id', $userId)->where('status', 'menunggu')->count();
-        $disetujui = Peminjaman::where('user_id', $userId)->where('status', 'disetujui')->count();
+        // 📊 Statistik
+        $totalPeminjaman = Peminjaman::where('user_id', $userId)->count();
+        $menunggu        = Peminjaman::where('user_id', $userId)->where('status', 'menunggu')->count();
+        $disetujui       = Peminjaman::where('user_id', $userId)->where('status', 'disetujui')->count();
+        $ditolak         = Peminjaman::where('user_id', $userId)->where('status', 'ditolak')->count();
 
-        return view('peminjam.dashboard', compact('total', 'menunggu', 'disetujui'));
+        // 📌 Peminjaman terakhir (5 data)
+        $peminjamanTerbaru = Peminjaman::with('alat')
+            ->where('user_id', $userId)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // 🔔 Belum dikembalikan
+        $belumKembali = Peminjaman::with('alat')
+            ->where('user_id', $userId)
+            ->where('status', 'dipinjam')
+            ->get();
+
+        return view('peminjam.dashboard', compact(
+            'totalPeminjaman',
+            'menunggu',
+            'disetujui',
+            'ditolak',
+            'peminjamanTerbaru',
+            'belumKembali'
+        ));
     }
 
+    /**
+     * Menampilkan Daftar Semua Buku/Alat
+     */
     public function alat()
     {
-        $alat = Alat::all();
-        return view('peminjam.alat', compact('alat'));
+        $alats = Alat::all();
+        return view('peminjam.alat.index', compact('alats'));
     }
 
-    public function peminjaman(Request $request)
+    /**
+     * Menampilkan Form Peminjaman
+     */
+    public function peminjaman()
     {
-        $userId = auth()->id();
+        $alats = Alat::where('stok', '>', 0)->get();
 
-        $alat = Alat::all();
+        $peminjaman = Peminjaman::with('alat')
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        $peminjaman = Peminjaman::where('user_id', $userId)
-                        ->latest()
-                        ->get();
-
-        return view('peminjam.peminjaman', compact('alat', 'peminjaman'));
+        return view('peminjam.peminjaman', compact('alats', 'peminjaman'));
     }
 
-    public function store(Request $request)
+    /**
+     * Menampilkan Daftar Buku yang Sedang Dipinjam (Untuk dikembalikan)
+     */
+    public function pengembalian()
     {
-        $request->validate([
-            'id_alat'             => 'required',
-            'tgl_rencana_kembali' => 'required|date|after_or_equal:today',
-        ]);
+        $peminjamans = Peminjaman::with('alat')
+            ->where('user_id', Auth::id())
+            ->where('status', 'dipinjam')
+            ->get();
 
-        DB::beginTransaction();
-
-        try {
-            $alat = Alat::findOrFail($request->id_alat);
-
-            if ($alat->stok <= 0) {
-                return back()->with('error', 'Stok alat habis!');
-            }
-
-            Peminjaman::create([
-                'user_id' => auth()->id(),
-                'nama_peminjam' => auth()->user()->name,
-                'nama_alat' => $alat->nama_alat,
-                'tgl_pinjam' => now()->toDateString(),
-                'tgl_rencana_kembali' => $request->tgl_rencana_kembali,
-                'status' => 'dipinjam',
-            ]);
-
-            $alat->decrement('stok');
-
-            DB::commit();
-
-            return redirect()->route('peminjam.peminjaman')
-                ->with('success', 'Berhasil pinjam!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            dd($e->getMessage());
-        }
+        return view('peminjam.pengembalian', compact('peminjamans'));
     }
 
+    /**
+     * Menampilkan Riwayat Semua Aktivitas Peminjaman
+     */
     public function riwayat()
     {
-        $userId = auth()->id();
+        $riwayats = Peminjaman::with('alat')
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        $riwayat = Peminjaman::where('user_id', $userId)
-                    ->whereNotNull('tgl_pinjam')
-                    ->latest()
-                    ->get();
+        return view('peminjam.riwayat', compact('riwayats'));
+    }
 
-        return view('peminjam.riwayat', compact('riwayat'));
+    /**
+     * Menyimpan data peminjaman baru ke database
+     */
+    public function store(Request $request)
+    {
+        // 1. Validasi input
+        $request->validate([
+            'alat_id'             => 'required',
+            'tgl_rencana_kembali' => 'required|date|after:today',
+        ]);
+
+        // 2. Cek Alat
+        $alat = Alat::find($request->alat_id);
+
+        // 3. Cek stok
+        if (!$alat || $alat->stok <= 0) {
+            return redirect()->back()->with('error', 'Stok buku habis atau tidak ditemukan!');
+        }
+
+        // 4. Simpan data
+        Peminjaman::create([
+            'user_id'             => Auth::id(),
+            'alat_id'             => $request->alat_id,
+            'tgl_pinjam'          => now()->toDateString(),
+            'tgl_rencana_kembali' => $request->tgl_rencana_kembali,
+            'status'              => 'dipinjam',
+        ]);
+
+        // 5. Kurangi stok
+        $alat->decrement('stok');
+
+        // 6. Redirect
+        return redirect()->route('peminjam.riwayat')
+            ->with('success', 'Berhasil meminjam buku!');
     }
 }

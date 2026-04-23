@@ -26,7 +26,8 @@ class KategoriController extends Controller
         ]);
 
         Kategori::create([
-            'nama_kategori' => $request->nama_kategori
+            'nama_kategori' => $request->nama_kategori,
+            'deskripsi' => $request->deskripsi,
         ]);
 
         return redirect()->route('admin.kategoris.index')
@@ -48,7 +49,8 @@ class KategoriController extends Controller
         $kategori = Kategori::findOrFail($id);
 
         $kategori->update([
-            'nama_kategori' => $request->nama_kategori
+            'nama_kategori' => $request->nama_kategori,
+            'deskripsi' => $request->deskripsi,
         ]);
 
         return redirect()->route('admin.kategoris.index')

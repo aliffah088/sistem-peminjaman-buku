@@ -10,18 +10,19 @@ return new class extends Migration {
         Schema::create('peminjamans', function (Blueprint $table) {
             $table->id();
 
-            $table->string('nama_peminjam')->nullable();
-            $table->string('nama_alat')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('alat_id')->constrained('alat')->cascadeOnDelete();
 
-            $table->date('tgl_pinjam')->nullable();
+            $table->date('tgl_pinjam');
             $table->date('tgl_rencana_kembali')->nullable();
+            $table->date('tgl_kembali')->nullable();
 
             $table->enum('status', [
                 'menunggu',
                 'dipinjam',
                 'dikembalikan',
                 'ditolak'
-            ])->default('menunggu'); // ✅ default jelas, tidak NULL
+            ])->default('menunggu');
 
             $table->timestamps();
         });

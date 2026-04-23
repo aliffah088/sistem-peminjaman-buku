@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogAktivitas;
 
 class LogAktivitasController extends Controller
 {
     public function index()
     {
-        $logs = [];
+        $logs = LogAktivitas::latest()->get();
 
         return view('admin.log.index', compact('logs'));
     }

@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            // Menambah kolom role (defaultnya peminjam)
+            $table->string('role')->default('peminjam')->after('email');
+            
+            // Menambah kolom identitas siswa (boleh kosong/nullable untuk admin)
+            $table->string('kelas')->nullable()->after('role');
+            $table->string('jurusan')->nullable()->after('kelas');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            // Menghapus kembali kolom jika migration di-rollback
+            $table->dropColumn(['role', 'kelas', 'jurusan']);
+        });
+    }
+};

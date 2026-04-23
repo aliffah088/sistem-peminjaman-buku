@@ -2,25 +2,64 @@
 
 @section('content')
 <div class="container">
-    <h3>Edit Alat</h3>
+    <h3>Edit Buku</h3>
 
-    <form action="{{ route('admin.alat.update', $alat->id_alat) }}" method="POST">
+    <form action="{{ route('admin.alat.update', $alat->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
         <div class="mb-3">
-            <label>Nama Alat</label>
+            <label>Cover Buku</label>
+            @if($alat->gambar)
+                <div class="mb-2">
+                    <img src="{{ asset($alat->gambar) }}" alt="Cover" style="max-width: 150px; max-height: 200px;">
+                </div>
+            @endif
+            <input type="file" name="gambar" class="form-control" accept="image/*">
+            <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar</small>
+        </div>
+
+        <div class="mb-3">
+            <label>Judul Buku</label>
             <input type="text" name="nama_alat" 
                    value="{{ $alat->nama_alat }}" 
                    class="form-control" required>
         </div>
 
         <div class="mb-3">
+            <label>Penulis</label>
+            <input type="text" name="penulis" 
+                   value="{{ $alat->penulis ?? '' }}" 
+                   class="form-control" placeholder="Nama penulis">
+        </div>
+
+        <div class="mb-3">
+            <label>Penerbit</label>
+            <input type="text" name="penerbit" 
+                   value="{{ $alat->penerbit ?? '' }}" 
+                   class="form-control" placeholder="Nama penerbit">
+        </div>
+
+        <div class="mb-3">
+            <label>Tahun Terbit</label>
+            <input type="number" name="tahun_terbit" 
+                   value="{{ $alat->tahun_terbit ?? '' }}" 
+                   class="form-control" placeholder="Contoh: 2024" min="1900" max="2100">
+        </div>
+
+        <div class="mb-3">
+            <label>ISBN</label>
+            <input type="text" name="isbn" 
+                   value="{{ $alat->isbn ?? '' }}" 
+                   class="form-control" placeholder="Nomor ISBN">
+        </div>
+
+        <div class="mb-3">
             <label>Kategori</label>
-            <select name="id_kategori" class="form-control">
+            <select name="kategori_id" class="form-control">
                 @foreach($kategoris as $k)
-                    <option value="{{ $k->id_kategori }}"
-                        {{ $alat->id_kategori == $k->id_kategori ? 'selected' : '' }}>
+                    <option value="{{ $k->id }}"
+                        {{ $alat->kategori_id == $k->id ? 'selected' : '' }}>
                         {{ $k->nama_kategori }}
                     </option>
                 @endforeach

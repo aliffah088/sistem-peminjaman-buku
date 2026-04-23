@@ -15,7 +15,7 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Menampilkan halaman registrasi.
      */
     public function create(): View
     {
@@ -23,32 +23,36 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Menangani permintaan registrasi.
      */
     public function store(Request $request): RedirectResponse
     {
+        // 1. VALIDASI INPUT
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:admin,peminjam'],
+            // Kelas wajib diisi hanya jika role adalah peminjam
+            'kelas' => ['required_if:role,peminjam', 'nullable', 'string', 'max:50'],
         ]);
 
-        User::create([
+        // 2. SIMPAN KE DATABASE
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'peminjam', // default role (WAJIB kalau pakai role)
+            'role' => $request->role,
+            'kelas' => $request->role === 'peminjam' ? $request->kelas : null,
         ]);
 
-        // ❌ HAPUS auto login
-        // Auth::login($user);
+        event(new Registered($user));
 
-        return redirect('/login')->with(
-            'success',
-            'Registrasi berhasil. Silakan login.'
-        );
+        // 3. LOGIN OTOMATIS
+        Auth::login($user);
+
+        // 4. REDIRECT (CARA LARAVEL 11)
+        // Mengarahkan ke route bernama 'dashboard'
+        return redirect()->intended(route('dashboard', absolute: false));
     }
-
 }

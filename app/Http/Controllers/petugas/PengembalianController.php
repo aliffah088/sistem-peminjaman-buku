@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Petugas;
 use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;
 use App\Models\Pengembalian;
+use App\Models\Alat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +41,14 @@ class PengembalianController extends Controller
                 'status'      => 'dikembalikan',
                 'tgl_kembali' => now(),
             ]);
+
+            // 🔄 KEMBALIKAN STOK BUKU SAAT PENGEMBALIAN
+            if ($peminjaman->id_alat) {
+                $alat = Alat::find($peminjaman->id_alat);
+                if ($alat) {
+                    $alat->increment('stok');
+                }
+            }
 
             DB::commit();
 

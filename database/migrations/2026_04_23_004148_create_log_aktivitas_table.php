@@ -8,21 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('laporan', function (Blueprint $table) {
+        Schema::create('log_aktivitas', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('alat_id')->constrained('alat')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('aktivitas');
             $table->string('keterangan')->nullable();
-            $table->date('tanggal')->nullable();
-
+            $table->string('ip_address')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('laporan');
+        Schema::dropIfExists('log_aktivitas');
     }
 };

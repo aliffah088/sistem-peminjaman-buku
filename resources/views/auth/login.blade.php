@@ -35,7 +35,7 @@
 
         {{-- JUDUL --}}
         <div class="text-center mb-4">
-            <h4 class="fw-bold mb-1">Selamat Datang 👋</h4>
+            <h4 class="fw-bold mb-1">Selamat Datang Di Sistem Peminjaman Buku</h4>
             <small class="text-muted">Masuk ke akun Anda</small>
         </div>
 

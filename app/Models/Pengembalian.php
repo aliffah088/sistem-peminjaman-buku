@@ -11,11 +11,12 @@ class Pengembalian extends Model
     protected $fillable = [
         'peminjaman_id',
         'tgl_kembali',
+        'terlambat',
         'denda',
-        'status'
+        'status',
     ];
 
-    // 🔥 RELASI KE PEMINJAMAN
+    // Relasi ke Peminjaman
     public function peminjaman()
     {
         return $this->belongsTo(Peminjaman::class, 'peminjaman_id', 'id');

@@ -4,12 +4,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PeminjamanController;
-use App\Http\Controllers\AlatController;
 use App\Http\Controllers\PengembalianController;
 use App\Http\Controllers\PeminjamController;
 
 // ADMIN
+use App\Http\Controllers\Admin\AlatController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\KategoriController;
@@ -24,154 +23,81 @@ use App\Http\Controllers\Petugas\PeminjamanController as PetugasPeminjamanContro
 use App\Http\Controllers\Petugas\PengembalianController as PetugasPengembalianController;
 use App\Http\Controllers\Petugas\LaporanController as PetugasLaporanController;
 
-/*
-|--------------------------------------------------------------------------
-| HOME / LOGIN
-|--------------------------------------------------------------------------
-*/
+Route::get('/', fn () => view('auth.login'));
 
-Route::get('/', function () {
-    return view('auth.login');
-});
-
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login')->middleware('guest');
+Route::get('/login', fn () => view('auth.login'))
+    ->name('login')
+    ->middleware('guest');
 
 require __DIR__.'/auth.php';
 
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware('auth')->get('/dashboard', function () {
-
-    $role = auth()->user()->role;
-
-    if ($role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-
-    if ($role === 'petugas') {
-        return redirect()->route('petugas.dashboard');
-    }
-
-    if ($role === 'peminjam') {
-        return redirect()->route('peminjam.dashboard');
-    }
-
-    Auth::logout();
-    abort(403);
-
+    return match (auth()->user()->role) {
+        'admin'    => redirect('/admin/dashboard'),
+        'petugas'  => redirect('/petugas/dashboard'),
+        'peminjam' => redirect('/peminjam/dashboard'),
+        default    => abort(403),
+    };
 })->name('dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN
-|--------------------------------------------------------------------------
-*/
-
+// --- ADMIN ---
 Route::middleware(['auth', 'cekrole:admin'])
-->prefix('admin')
-->name('admin.')
-->group(function () {
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::resource('alat', AlatController::class);
+        Route::resource('kategoris', KategoriController::class)->parameters(['kategoris' => 'kategori']);
+        Route::get('/peminjaman', [AdminPeminjamanController::class, 'index'])->name('peminjaman.index');
+        Route::get('/peminjaman/{id}', [AdminPeminjamanController::class, 'show'])->name('peminjaman.show');
+        Route::patch('/peminjaman/{id}/setujui', [AdminPeminjamanController::class, 'setujui'])->name('peminjaman.setujui');
+        Route::patch('/peminjaman/{id}/tolak', [AdminPeminjamanController::class, 'tolak'])->name('peminjaman.tolak');
+        Route::resource('users', UserController::class);
+        Route::get('/pengembalian', [AdminPengembalianController::class, 'index'])->name('pengembalian.index');
 
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-        ->name('dashboard');
+        Route::put('/pengembalian/{id}/denda', [AdminPengembalianController::class, 'updateDenda'])->name('pengembalian.updateDenda');
 
-    Route::resource('alat', AlatController::class);
-    Route::resource('kategoris', KategoriController::class);
-    Route::resource('peminjaman', PeminjamanController::class);
-    Route::resource('users', UserController::class);
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/log', [LogAktivitasController::class, 'index'])->name('log.index');
+    });
 
-    Route::get('/peminjaman-monitoring', [AdminPeminjamanController::class, 'index'])
-        ->name('peminjaman.monitoring');
-
-    Route::get('/pengembalian', [AdminPengembalianController::class, 'index'])
-        ->name('pengembalian.index');
-
-    Route::get('/laporan', [LaporanController::class, 'index'])
-        ->name('laporan.index');
-
-    // ✅ FIX ERROR INI (LOG ACTIVITY)
-    Route::get('/log', [LogAktivitasController::class, 'index'])
-        ->name('log.index');
-});
-
-/*
-|--------------------------------------------------------------------------
-| PETUGAS
-|--------------------------------------------------------------------------
-*/
-
+// --- PETUGAS ---
 Route::middleware(['auth', 'cekrole:petugas'])
-->prefix('petugas')
-->name('petugas.')
-->group(function () {
+    ->prefix('petugas')
+    ->name('petugas.')
+    ->group(function () {
+        Route::get('/dashboard', [PetugasDashboardController::class, 'index'])->name('dashboard');
+        Route::resource('peminjaman', PetugasPeminjamanController::class);
+        Route::get('/pengembalian', [PetugasPengembalianController::class, 'index'])->name('pengembalian.index');
+        Route::post('/pengembalian', [PetugasPengembalianController::class, 'store'])->name('pengembalian.store');
+        Route::get('/laporan', [PetugasLaporanController::class, 'index'])->name('laporan.index');
+    });
 
-    Route::get('/dashboard', [PetugasDashboardController::class, 'index'])
-        ->name('dashboard');
+// --- PEMINJAM ---
+Route::middleware(['auth', 'cekrole:peminjam'])
+    ->prefix('peminjam')
+    ->name('peminjam.')
+    ->group(function () {
+        Route::get('/dashboard', [PeminjamController::class, 'dashboard'])->name('dashboard');
+        Route::get('/alat', [PeminjamController::class, 'alat'])->name('alat');
+        Route::get('/peminjaman', [PeminjamController::class, 'peminjaman'])->name('peminjaman');
+        Route::get('/pengembalian', [PeminjamController::class, 'pengembalian'])->name('pengembalian');
+        Route::get('/riwayat', [PeminjamController::class, 'riwayat'])->name('riwayat');
+        Route::post('/store', [PeminjamController::class, 'store'])->name('store');
+    });
 
-    Route::resource('peminjaman', PetugasPeminjamanController::class);
-
-    Route::get('/pengembalian', [PetugasPengembalianController::class, 'index'])
-        ->name('pengembalian.index');
-
-    Route::post('/pengembalian', [PetugasPengembalianController::class, 'store'])
-        ->name('pengembalian.store');
-
-    Route::get('/laporan', [PetugasLaporanController::class, 'index'])
-        ->name('laporan.index');
-});
-
-/*
-|--------------------------------------------------------------------------
-| PEMINJAM
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'cekrole:peminjam'])->group(function () {
-
-    Route::get('/peminjam/dashboard', [PeminjamController::class, 'dashboard'])
-        ->name('peminjam.dashboard');
-
-    Route::get('/peminjam/alat', [PeminjamController::class, 'alat'])
-        ->name('peminjam.alat');
-
-    Route::get('/peminjam/peminjaman', [PeminjamController::class, 'peminjaman'])
-        ->name('peminjam.peminjaman');
-
-    Route::get('/peminjam/riwayat', [PeminjamController::class, 'riwayat'])
-        ->name('peminjam.riwayat');
-
-    Route::post('/peminjam/store', [PeminjamController::class, 'store'])
-        ->name('peminjam.store');
-});
-
-/*
-|--------------------------------------------------------------------------
-| PROFILE
-|--------------------------------------------------------------------------
-*/
-
+// --- GLOBAL ---
 Route::middleware('auth')->group(function () {
-
-    Route::put('/pengembalian/{id}', [PengembalianController::class, 'update'])
-        ->name('pengembalian.update');
-
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/pengembalian/{id}', [PengembalianController::class, 'update'])->name('pengembalian.update');
 });
-
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
 
 Route::post('/logout', function () {
     Auth::logout();
     return redirect('/login');
 })->name('logout');
+
+Route::get('/check-images', function () {
+    $alat = \App\Models\Alat::all(['id', 'nama_alat', 'gambar']);
+    return response()->json($alat);
+});

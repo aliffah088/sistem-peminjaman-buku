@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('alat', function (Blueprint $table) {
-            $table->dropColumn('kondisi'); // hapus kolom kondisi
+            $table->string('gambar')->nullable()->after('isbn');
         });
     }
 
     public function down(): void
     {
         Schema::table('alat', function (Blueprint $table) {
-            $table->string('kondisi'); // untuk rollback, kalau mau bisa tambahkan default
+            $table->dropColumn('gambar');
         });
     }
 };
