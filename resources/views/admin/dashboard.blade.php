@@ -3,80 +3,99 @@
 @section('content')
 <div class="container-fluid">
 
-    <div class="mb-4">
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard Admin
-        </h4>
-        <small class="text-muted">Selamat datang, {{ auth()->user()->name }}</small>
+    {{-- Welcome Banner --}}
+    <div class="card border-0 shadow-sm mb-4 bg-dark text-white" style="border-radius: 16px;">
+        <div class="card-body p-4 d-flex align-items-center gap-4">
+            <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                 style="width: 60px; height: 60px; min-width: 60px;">
+                <i class="bi bi-shield-check fs-3 text-white"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1">Selamat Datang, {{ auth()->user()->name }}! 👋</h4>
+                <p class="mb-0 opacity-75">Kelola sistem perpustakaan dengan mudah dan efisien.</p>
+            </div>
+        </div>
     </div>
 
-    <div class="row g-4">
-
-        {{-- Total Peminjam --}}
+    {{-- Statistik --}}
+    <div class="row g-3">
         <div class="col-xl-3 col-md-6">
-            <div class="card shadow-sm border-0 bg-primary text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small">Total Peminjam</h6>
-                            <h2 class="fw-bold mb-0">{{ $totalPeminjam ?? 0 }}</h2>
-                        </div>
-                        <i class="bi bi-people fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="bi bi-people text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-semibold">TOTAL PEMINJAM</div>
+                        <div class="fs-3 fw-bold text-primary">{{ $totalPeminjam ?? 0 }}</div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a class="small text-white text-decoration-none" href="{{ route('admin.users.index') }}">
+                <div class="card-footer bg-transparent border-top">
+                    <a href="{{ route('admin.users.index') }}" class="small text-decoration-none text-primary">
                         Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>
         </div>
-
-        {{-- Sedang Dipinjam --}}
         <div class="col-xl-3 col-md-6">
-            <div class="card shadow-sm border-0 bg-warning text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small">Sedang Dipinjam</h6>
-                            <h2 class="fw-bold mb-0">{{ $sedangDipinjam ?? 0 }}</h2>
-                        </div>
-                        <i class="bi bi-book fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="bi bi-book text-warning fs-5"></i>
                     </div>
+                    <div>
+                        <div class="small text-muted fw-semibold">SEDANG DIPINJAM</div>
+                        <div class="fs-3 fw-bold text-warning">{{ $sedangDipinjam ?? 0 }}</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top">
+                    <a href="{{ route('admin.peminjaman.index') }}" class="small text-decoration-none text-warning">
+                        Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
-
-        {{-- Total Pengguna --}}
         <div class="col-xl-3 col-md-6">
-            <div class="card shadow-sm border-0 bg-success text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small">Total Pengguna</h6>
-                            <h2 class="fw-bold mb-0">{{ $totalPengguna ?? 0 }}</h2>
-                        </div>
-                        <i class="bi bi-person-check fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="bi bi-person-check text-success fs-5"></i>
                     </div>
+                    <div>
+                        <div class="small text-muted fw-semibold">TOTAL PENGGUNA</div>
+                        <div class="fs-3 fw-bold text-success">{{ $totalPengguna ?? 0 }}</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top">
+                    <a href="{{ route('admin.users.index') }}" class="small text-decoration-none text-success">
+                        Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
-
-        {{-- Terlambat --}}
         <div class="col-xl-3 col-md-6">
-            <div class="card shadow-sm border-0 bg-danger text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small">Terlambat Dikembalikan</h6>
-                            <h2 class="fw-bold mb-0">{{ $terlambat ?? 0 }}</h2>
-                        </div>
-                        <i class="bi bi-exclamation-circle fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="bi bi-exclamation-circle text-danger fs-5"></i>
                     </div>
+                    <div>
+                        <div class="small text-muted fw-semibold">TERLAMBAT DIKEMBALIKAN</div>
+                        <div class="fs-3 fw-bold text-danger">{{ $terlambat ?? 0 }}</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top">
+                    <a href="{{ route('admin.pengembalian.index') }}" class="small text-decoration-none text-danger">
+                        Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
-
     </div>
+
 </div>
 @endsection

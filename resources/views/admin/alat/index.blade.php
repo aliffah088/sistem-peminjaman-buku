@@ -17,22 +17,23 @@
     {{-- Search & Filter --}}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.alat.index') }}" class="row g-2 align-items-center">
+            <div class="row g-2 align-items-center">
                 <div class="col-md-5">
                     <div class="input-group">
                         <span class="input-group-text bg-white">
                             <i class="bi bi-search text-muted"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-start-0"
+                        <input type="text" id="liveSearch" class="form-control border-start-0"
                                placeholder="Cari judul, penulis, ISBN..."
-                               value="{{ request('search') }}">
+                               value="{{ request('search') }}"
+                               autocomplete="off">
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <select name="kategori" class="form-select">
+                    <select id="filterKategori" class="form-select">
                         <option value="">-- Semua Kategori --</option>
                         @foreach($kategoris ?? [] as $k)
-                            <option value="{{ $k->id }}"
+                            <option value="{{ strtolower($k->nama_kategori) }}"
                                 {{ request('kategori') == $k->id ? 'selected' : '' }}>
                                 {{ $k->nama_kategori }}
                             </option>
@@ -40,16 +41,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search me-1"></i> Cari
+                    <button onclick="resetFilter()" class="btn btn-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
                     </button>
                 </div>
-                <div class="col-md-1">
-                    <a href="{{ route('admin.alat.index') }}" class="btn btn-secondary w-100">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -59,13 +55,13 @@
             <span class="fw-semibold text-dark">
                 <i class="bi bi-table me-2 text-primary"></i>Daftar Buku
             </span>
-            <span class="badge bg-primary rounded-pill">
+            <span class="badge bg-primary rounded-pill" id="jumlahBuku">
                 {{ $alat->count() }} buku
             </span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="tableBuku">
                     <thead>
                         <tr class="table-dark">
                             <th class="text-center ps-4" style="width: 50px;">No</th>
@@ -79,10 +75,14 @@
                             <th class="text-center" style="width: 130px;">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tablebody">
                         @forelse ($alat as $a)
-                        <tr>
-                            <td class="text-center ps-4 text-muted">{{ $loop->iteration }}</td>
+                        <tr class="buku-row"
+                            data-judul="{{ strtolower($a->nama_alat) }}"
+                            data-penulis="{{ strtolower($a->penulis ?? '') }}"
+                            data-isbn="{{ strtolower($a->isbn ?? '') }}"
+                            data-kategori="{{ strtolower(optional($a->kategori)->nama_kategori ?? '') }}">
+                            <td class="text-center ps-4 text-muted row-number">{{ $loop->iteration }}</td>
                             <td class="text-center">
                                 @if($a->gambar)
                                     <img src="{{ asset($a->gambar) }}"
@@ -136,7 +136,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
+                        <tr id="emptyRow">
                             <td colspan="9" class="text-center text-muted py-5">
                                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                                 Data buku tidak ditemukan.
@@ -150,4 +150,64 @@
     </div>
 
 </div>
+
+<script>
+    const searchInput   = document.getElementById('liveSearch');
+    const filterKategori = document.getElementById('filterKategori');
+
+    function filterTable() {
+        const keyword  = searchInput.value.toLowerCase();
+        const kategori = filterKategori.value.toLowerCase();
+        const rows     = document.querySelectorAll('.buku-row');
+        let visible    = 0;
+
+        rows.forEach(row => {
+            const judul    = row.dataset.judul;
+            const penulis  = row.dataset.penulis;
+            const isbn     = row.dataset.isbn;
+            const kat      = row.dataset.kategori;
+
+            const matchSearch   = judul.includes(keyword) || penulis.includes(keyword) || isbn.includes(keyword);
+            const matchKategori = kategori === '' || kat.includes(kategori);
+
+            if (matchSearch && matchKategori) {
+                row.style.display = '';
+                visible++;
+                row.querySelector('.row-number').textContent = visible;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update badge jumlah
+        document.getElementById('jumlahBuku').textContent = visible + ' buku';
+
+        // Tampilkan pesan kosong jika tidak ada hasil
+        let noResult = document.getElementById('noResult');
+        if (visible === 0) {
+            if (!noResult) {
+                const tbody = document.getElementById('tablebody');
+                const tr = document.createElement('tr');
+                tr.id = 'noResult';
+                tr.innerHTML = `<td colspan="9" class="text-center text-muted py-5">
+                    <i class="bi bi-search fs-3 d-block mb-2"></i>
+                    Buku tidak ditemukan.
+                </td>`;
+                tbody.appendChild(tr);
+            }
+        } else {
+            if (noResult) noResult.remove();
+        }
+    }
+
+    function resetFilter() {
+        searchInput.value = '';
+        filterKategori.value = '';
+        filterTable();
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    filterKategori.addEventListener('change', filterTable);
+</script>
+
 @endsection

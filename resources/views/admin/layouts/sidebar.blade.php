@@ -33,7 +33,7 @@
                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 rounded mb-1
                    {{ request()->routeIs('admin.alat.*') ? 'bg-primary text-white fw-semibold active' : 'text-white-50' }}">
                     <i class="bi bi-journal-bookmark"></i> 
-                    <span>Buku</span>
+                    <span>Data Buku</span>
                 </a>
 
                 {{-- Data Peminjaman --}}
