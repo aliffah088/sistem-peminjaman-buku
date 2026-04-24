@@ -5,9 +5,29 @@
     <h1 class="mt-2 fw-bold">📚 Daftar Buku</h1>
     <p class="text-muted">Koleksi buku tersedia</p>
 
-    <div class="row g-4">
+    {{-- Search Bar --}}
+    <div class="mb-4">
+        <div class="input-group" style="max-width: 400px;">
+            <span class="input-group-text bg-white">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" id="searchBuku"
+                   class="form-control border-start-0"
+                   placeholder="Cari judul, penulis, kategori..."
+                   autocomplete="off">
+        </div>
+    </div>
+
+    {{-- Jumlah hasil --}}
+    <p class="text-muted small mb-3" id="hasilCari"></p>
+
+    {{-- Grid Buku --}}
+    <div class="row g-4" id="gridBuku">
         @forelse($alats as $item)
-        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 buku-item"
+             data-judul="{{ strtolower($item->nama_alat) }}"
+             data-penulis="{{ strtolower($item->penulis ?? '') }}"
+             data-kategori="{{ strtolower($item->kategori->nama_kategori ?? '') }}">
             <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
 
                 {{-- FOTO BUKU --}}
@@ -67,5 +87,46 @@
         </div>
         @endforelse
     </div>
+
+    {{-- Pesan tidak ditemukan --}}
+    <div id="tidakDitemukan" class="text-center py-5 text-muted" style="display: none;">
+        <i class="bi bi-search fs-1 d-block mb-2"></i>
+        Buku tidak ditemukan.
+    </div>
+
 </div>
+
+<script>
+    const searchInput = document.getElementById('searchBuku');
+    const hasilCari   = document.getElementById('hasilCari');
+    const tidakDitemukan = document.getElementById('tidakDitemukan');
+
+    searchInput.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        const items   = document.querySelectorAll('.buku-item');
+        let visible   = 0;
+
+        items.forEach(item => {
+            const judul    = item.dataset.judul;
+            const penulis  = item.dataset.penulis;
+            const kategori = item.dataset.kategori;
+
+            if (judul.includes(keyword) || penulis.includes(keyword) || kategori.includes(keyword)) {
+                item.style.display = '';
+                visible++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (keyword === '') {
+            hasilCari.textContent = '';
+        } else {
+            hasilCari.textContent = visible + ' buku ditemukan untuk "' + this.value + '"';
+        }
+
+        tidakDitemukan.style.display = visible === 0 && keyword !== '' ? 'block' : 'none';
+    });
+</script>
+
 @endsection
