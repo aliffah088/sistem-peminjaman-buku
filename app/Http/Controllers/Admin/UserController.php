@@ -21,14 +21,21 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role' => $request->role,
+        $request->validate([
+            'name'     => 'required',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'role'     => 'required',
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambah');
+        User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+            'role'     => $request->role,
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambah!');
     }
 
     public function edit($id)
@@ -39,20 +46,34 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
+        $request->validate([
+            'name'     => 'required',
+            'email'    => 'required|email|unique:users,email,' . $id,
+            'role'     => 'required',
+            'password' => 'nullable|min:6',
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate');
+        $user = User::findOrFail($id);
+
+        $data = [
+            'name'  => $request->name,
+            'email' => $request->email,
+            'role'  => $request->role,
+        ];
+
+        // Update password hanya jika diisi
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate!');
     }
 
     public function destroy($id)
     {
         User::findOrFail($id)->delete();
-        return back()->with('success', 'User dihapus');
+        return back()->with('success', 'User berhasil dihapus!');
     }
 }
